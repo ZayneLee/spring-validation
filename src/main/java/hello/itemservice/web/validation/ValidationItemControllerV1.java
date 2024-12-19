@@ -63,7 +63,7 @@ public class ValidationItemControllerV1 {
         if (item.getPrice() != null && item.getQuantity() != null) {
             int result = item.getPrice() * item.getQuantity();
             if (result < 10000) {
-                errors.put("erros", "상품 가격 * 수량은 10,000 원 이상이어야 합니다. 현재 가격은 " + result);
+                errors.put("globalError", "상품 가격 * 수량은 10,000 원 이상이어야 합니다. 현재 가격은 " + result);
             }
         }
 
