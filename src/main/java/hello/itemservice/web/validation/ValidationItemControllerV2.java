@@ -81,7 +81,7 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
-    @PostMapping("/add")
+    // @PostMapping("/add")
     public String addItemV2(@ModelAttribute Item item, BindingResult bindingResult,
             RedirectAttributes redirectAttributes) {
 
@@ -106,6 +106,49 @@ public class ValidationItemControllerV2 {
             if (result < 10000) {
                 bindingResult.addError(
                         new ObjectError("item", null, null, "상품 가격 * 수량은 10,000 원 이상이어야 합니다. 현재 가격은 " + result));
+            }
+        }
+
+        if (bindingResult.hasErrors()) {
+            log.info("errors = {}", bindingResult);
+            return "validation/v2/addForm";
+        }
+
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    @PostMapping("/add")
+    public String addItemV3(@ModelAttribute Item item, BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
+
+        if (!StringUtils.hasText(item.getItemName())) {
+            bindingResult.addError(
+                    new FieldError("item", "itemName", item.getItemName(), false,
+                            new String[] { "required.item.itemName" }, null, null));
+        }
+
+        if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
+            bindingResult.addError(
+                    new FieldError("item", "price", item.getPrice(), false, new String[] { "range.item.price" },
+                            new Object[] { 1000, 1000000 }, null));
+        }
+
+        if (item.getQuantity() == null || item.getQuantity() > 9999) {
+            bindingResult.addError(
+                    new FieldError("item", "quantity", item.getQuantity(), false, new String[] { "max.item.quantity" },
+                            new Object[] { 9999 }, null));
+
+        }
+
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int result = item.getPrice() * item.getQuantity();
+            if (result < 10000) {
+                bindingResult.addError(
+                        new ObjectError("item", new String[] { "totalPriceMin" }, new Object[] { 10000, result },
+                                null));
             }
         }
 
