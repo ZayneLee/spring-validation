@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ValidationItemControllerV2 {
 
     private final ItemRepository itemRepository;
+    private final ItemValidator itemValidator;
 
     @GetMapping
     public String items(Model model) {
@@ -203,24 +204,7 @@ public class ValidationItemControllerV2 {
     public String addItemV5(@ModelAttribute Item item, BindingResult bindingResult,
             RedirectAttributes redirectAttributes) {
 
-        if (!StringUtils.hasText(item.getItemName())) {
-            bindingResult.rejectValue("itemName", "required");
-        }
-
-        if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
-            bindingResult.rejectValue("price", "range", new Object[]{1000, 1000000}, null);
-        }
-
-        if (item.getQuantity() == null || item.getQuantity() > 9999) {
-            bindingResult.rejectValue("quantity", "max", new Object[]{9999}, null);
-        }
-
-        if (item.getPrice() != null && item.getQuantity() != null) {
-            int result = item.getPrice() * item.getQuantity();
-            if (result < 10000) {
-                bindingResult.reject("totalPriceMin", new Object[]{10000, result}, null);
-            }
-        }
+        itemValidator.validate(item, bindingResult);
 
         if (bindingResult.hasErrors()) {
             log.info("errors = {}", bindingResult);
